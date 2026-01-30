@@ -122,6 +122,14 @@ class SDP_Download {
             wp_die('無効なダウンロードリンクです。');
         }
         
+        // 有効期限をチェック
+        if (!empty($order->expires_at)) {
+            $expiry_time = strtotime($order->expires_at);
+            if ($expiry_time && time() > $expiry_time) {
+                wp_die('ダウンロードリンクの有効期限が切れています。');
+            }
+        }
+        
         // ダウンロード制限をチェック
         if ($order->download_count >= $order->download_limit) {
             wp_die('ダウンロード回数の上限に達しました。');

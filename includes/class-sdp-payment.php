@@ -384,6 +384,11 @@ class SDP_Payment {
             
             $orders_table = $wpdb->prefix . 'sdp_orders';
             
+            // 設定からダウンロード制限を取得
+            $settings = get_option('sdp_settings');
+            $download_limit = isset($settings['download_limit']) ? intval($settings['download_limit']) : 5;
+            $expiration_days = isset($settings['download_expiration_days']) ? intval($settings['download_expiration_days']) : 30;
+            
             $order_data = array(
                 'product_id' => $product_id,
                 'customer_email' => $full_session->customer_details->email,
@@ -395,7 +400,8 @@ class SDP_Payment {
                 'status' => 'completed',
                 'download_token' => $download_token,
                 'download_count' => 0,
-                'download_limit' => 5,
+                'download_limit' => $download_limit,
+                'expires_at' => date('Y-m-d H:i:s', strtotime('+' . $expiration_days . ' days')),
             );
             
             $this->log_to_file('Inserting order data: ' . print_r($order_data, true));

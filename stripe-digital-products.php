@@ -137,6 +137,12 @@ class Stripe_Digital_Products {
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
         dbDelta($sql);
         
+        // 既存テーブルにimage_urlカラムが存在しない場合は追加
+        $column_exists = $wpdb->get_results("SHOW COLUMNS FROM $table_name LIKE 'image_url'");
+        if (empty($column_exists)) {
+            $wpdb->query("ALTER TABLE $table_name ADD COLUMN image_url varchar(500) AFTER description");
+        }
+        
         // 注文テーブル
         $orders_table = $wpdb->prefix . 'sdp_orders';
         
@@ -153,6 +159,7 @@ class Stripe_Digital_Products {
             download_token varchar(100),
             download_count int(11) DEFAULT 0,
             download_limit int(11) DEFAULT 5,
+            expires_at datetime,
             created_at datetime DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY  (id),
@@ -162,6 +169,12 @@ class Stripe_Digital_Products {
         ) $charset_collate;";
         
         dbDelta($sql);
+        
+        // 既存テーブルにexpires_atカラムが存在しない場合は追加
+        $expires_column_exists = $wpdb->get_results("SHOW COLUMNS FROM $orders_table LIKE 'expires_at'");
+        if (empty($expires_column_exists)) {
+            $wpdb->query("ALTER TABLE $orders_table ADD COLUMN expires_at datetime AFTER download_limit");
+        }
     }
     
     public function enqueue_frontend_assets() {

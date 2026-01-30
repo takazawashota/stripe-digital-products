@@ -161,10 +161,25 @@ class SDP_Frontend {
                             </td>
                             <td>
                                 <?php if ($order->status === 'completed'): ?>
-                                    <?php if ($order->download_count < $order->download_limit): ?>
+                                    <?php 
+                                    // 有効期限チェック
+                                    $is_expired = false;
+                                    if (!empty($order->expires_at)) {
+                                        $expiry_time = strtotime($order->expires_at);
+                                        if ($expiry_time && time() > $expiry_time) {
+                                            $is_expired = true;
+                                        }
+                                    }
+                                    ?>
+                                    <?php if ($is_expired): ?>
+                                        <span class="sdp-download-expired">期限切れ</span>
+                                    <?php elseif ($order->download_count < $order->download_limit): ?>
                                         <a href="<?php echo esc_url(add_query_arg('sdp_download', $order->download_token, home_url('/'))); ?>" class="sdp-download-link">
                                             ダウンロード (<?php echo esc_html($order->download_count); ?>/<?php echo esc_html($order->download_limit); ?>)
                                         </a>
+                                        <?php if (!empty($order->expires_at)): ?>
+                                            <br><small>有効期限: <?php echo esc_html(date('Y年m月d日', strtotime($order->expires_at))); ?></small>
+                                        <?php endif; ?>
                                     <?php else: ?>
                                         <span class="sdp-download-expired">制限に達しました</span>
                                     <?php endif; ?>

@@ -10,6 +10,45 @@ if ($product_id) {
     $product = SDP_Products::get_instance()->get_product($product_id);
 }
 
+// 削除処理
+if (isset($_POST['sdp_delete_product']) && $product_id) {
+    check_admin_referer('sdp_product_nonce');
+    
+    global $wpdb;
+    
+    // 過去の注文があるかチェック
+    $orders_table = $wpdb->prefix . 'sdp_orders';
+    $order_count = $wpdb->get_var($wpdb->prepare(
+        "SELECT COUNT(*) FROM $orders_table WHERE product_id = %d",
+        $product_id
+    ));
+    
+    if ($order_count > 0) {
+        echo '<div class="notice notice-warning"><p>この商品には ' . intval($order_count) . ' 件の注文履歴があります。削除しても過去の購入者はダウンロードできなくなります。</p></div>';
+    }
+    
+    // ファイルを削除
+    if (!empty($product->file_path)) {
+        $upload_dir = wp_upload_dir();
+        $file_full_path = $upload_dir['basedir'] . '/' . $product->file_path;
+        if (file_exists($file_full_path)) {
+            @unlink($file_full_path);
+        }
+    }
+    
+    // データベースから削除
+    $products_table = $wpdb->prefix . 'sdp_products';
+    $result = $wpdb->delete($products_table, array('id' => $product_id), array('%d'));
+    
+    if ($result !== false) {
+        echo '<div class="notice notice-success"><p>商品を削除しました。</p></div>';
+        echo '<script>setTimeout(function(){ window.location.href = "admin.php?page=sdp-products"; }, 1500);</script>';
+        return;
+    } else {
+        echo '<div class="notice notice-error"><p>削除に失敗しました: ' . esc_html($wpdb->last_error) . '</p></div>';
+    }
+}
+
 // 保存処理
 if (isset($_POST['sdp_save_product'])) {
     check_admin_referer('sdp_product_nonce');
@@ -175,16 +214,54 @@ if (isset($_POST['sdp_save_product'])) {
                 </th>
                 <td>
                     <?php
+                    // 通貨設定を取得
+                    $settings = get_option('sdp_settings');
+                    $currency = $settings['currency'] ?? 'jpy';
+                    
+                    // 通貨ごとの設定
+                    $currency_settings = array(
+                        'jpy' => array(
+                            'symbol' => '¥',
+                            'step' => '1',
+                            'min' => '50',
+                            'description' => '円単位で入力してください',
+                            'note' => '※ Stripeの制限により、最小金額は50円です'
+                        ),
+                        'usd' => array(
+                            'symbol' => '$',
+                            'step' => '0.01',
+                            'min' => '0.50',
+                            'description' => 'ドル単位で入力してください（小数点2桁まで）',
+                            'note' => '※ Stripeの制限により、最小金額は$0.50です'
+                        ),
+                        'eur' => array(
+                            'symbol' => '€',
+                            'step' => '0.01',
+                            'min' => '0.50',
+                            'description' => 'ユーロ単位で入力してください（小数点2桁まで）',
+                            'note' => '※ Stripeの制限により、最小金額は€0.50です'
+                        )
+                    );
+                    
+                    $current_currency = $currency_settings[$currency] ?? $currency_settings['jpy'];
+                    
                     $display_price = '';
                     if (isset($product->price)) {
-                        // 小数点以下がゼロの場合は整数で表示
-                        $display_price = (floor($product->price) == $product->price) ? (int)$product->price : $product->price;
+                        // JPYの場合は整数、それ以外は小数点2桁
+                        if ($currency === 'jpy') {
+                            $display_price = (floor($product->price) == $product->price) ? (int)$product->price : $product->price;
+                        } else {
+                            $display_price = number_format($product->price, 2, '.', '');
+                        }
                     }
                     ?>
-                    <input type="number" name="price" id="price" value="<?php echo esc_attr($display_price); ?>" step="1" min="50" required />
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 18px; font-weight: bold;"><?php echo esc_html($current_currency['symbol']); ?></span>
+                        <input type="number" name="price" id="price" value="<?php echo esc_attr($display_price); ?>" step="<?php echo esc_attr($current_currency['step']); ?>" min="<?php echo esc_attr($current_currency['min']); ?>" required style="width: 150px;" />
+                    </div>
                     <p class="description">
-                        円単位で入力してください<br>
-                        <strong style="color: #d63638;">※ Stripeの制限により、最小金額は50円です</strong>
+                        <?php echo esc_html($current_currency['description']); ?><br>
+                        <strong style="color: #d63638;"><?php echo esc_html($current_currency['note']); ?></strong>
                     </p>
                 </td>
             </tr>
@@ -276,6 +353,11 @@ if (isset($_POST['sdp_save_product'])) {
         
         <p class="submit">
             <input type="submit" name="sdp_save_product" class="button button-primary" value="<?php echo $product_id ? '更新' : '追加'; ?>" />
+            <?php if ($product_id): ?>
+                <input type="submit" name="sdp_delete_product" class="button button-link-delete" value="削除" 
+                       onclick="return confirm('この商品を削除してもよろしいですか？\n\n・商品データがデータベースから削除されます\n・アップロードされたファイルも削除されます\n・過去の購入者もダウンロードできなくなります\n\nこの操作は取り消せません。');" 
+                       style="color: #b32d2e; margin-left: 10px;" />
+            <?php endif; ?>
             <a href="<?php echo admin_url('admin.php?page=stripe-digital-products'); ?>" class="button">キャンセル</a>
         </p>
     </form>
