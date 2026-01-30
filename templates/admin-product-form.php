@@ -113,6 +113,7 @@ if (isset($_POST['sdp_save_product'])) {
             'name' => $name,
             'description' => wp_kses_post($_POST['description']),
             'image_url' => $image_url,
+            'product_type' => sanitize_text_field($_POST['product_type'] ?? 'digital'),
             'price' => $price,
             'file_path' => $file_path,
             'status' => sanitize_text_field($_POST['status']),
@@ -186,6 +187,20 @@ if (isset($_POST['sdp_save_product'])) {
                         )
                     );
                     ?>
+                </td>
+            </tr>
+            
+            <tr>
+                <th scope="row">
+                    <label for="product_type">商品種類 <span class="required">*</span></label>
+                </th>
+                <td>
+                    <select name="product_type" id="product_type" required>
+                        <option value="digital" <?php selected($product->product_type ?? 'digital', 'digital'); ?>>デジタル商品</option>
+                        <option value="physical" <?php selected($product->product_type ?? 'digital', 'physical'); ?>>物理商品</option>
+                        <option value="service" <?php selected($product->product_type ?? 'digital', 'service'); ?>>サービス</option>
+                    </select>
+                    <p class="description">商品の種類を選択してください</p>
                 </td>
             </tr>
             

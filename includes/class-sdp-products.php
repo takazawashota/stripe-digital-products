@@ -73,6 +73,12 @@ class SDP_Products {
             'status' => sanitize_text_field($data['status']),
         );
         
+        // product_typeカラムが存在する場合のみ追加
+        $column_exists = $wpdb->get_results("SHOW COLUMNS FROM $table_name LIKE 'product_type'");
+        if (!empty($column_exists)) {
+            $product_data['product_type'] = isset($data['product_type']) ? sanitize_text_field($data['product_type']) : 'digital';
+        }
+        
         if (isset($data['id']) && $data['id']) {
             // 更新
             $wpdb->update(

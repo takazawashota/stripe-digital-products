@@ -249,16 +249,34 @@ class SDP_Download {
     public function get_all_orders($limit = 100, $offset = 0) {
         global $wpdb;
         $orders_table = $wpdb->prefix . 'sdp_orders';
+        $products_table = $wpdb->prefix . 'sdp_products';
         
-        return $wpdb->get_results($wpdb->prepare(
-            "SELECT o.*, p.name as product_name, p.product_type 
-             FROM $orders_table o
-             LEFT JOIN {$wpdb->prefix}sdp_products p ON o.product_id = p.id
-             ORDER BY o.created_at DESC
-             LIMIT %d OFFSET %d",
-            $limit,
-            $offset
-        ));
+        // product_typeカラムの存在確認
+        $column_exists = $wpdb->get_results("SHOW COLUMNS FROM $products_table LIKE 'product_type'");
+        
+        if (!empty($column_exists)) {
+            // product_typeカラムが存在する場合
+            return $wpdb->get_results($wpdb->prepare(
+                "SELECT o.*, p.name as product_name, p.product_type 
+                 FROM $orders_table o
+                 LEFT JOIN $products_table p ON o.product_id = p.id
+                 ORDER BY o.created_at DESC
+                 LIMIT %d OFFSET %d",
+                $limit,
+                $offset
+            ));
+        } else {
+            // product_typeカラムが存在しない場合はデフォルト値を設定
+            return $wpdb->get_results($wpdb->prepare(
+                "SELECT o.*, p.name as product_name, 'digital' as product_type 
+                 FROM $orders_table o
+                 LEFT JOIN $products_table p ON o.product_id = p.id
+                 ORDER BY o.created_at DESC
+                 LIMIT %d OFFSET %d",
+                $limit,
+                $offset
+            ));
+        }
     }
     
     /**
@@ -267,14 +285,31 @@ class SDP_Download {
     public function get_orders_by_email($email) {
         global $wpdb;
         $orders_table = $wpdb->prefix . 'sdp_orders';
+        $products_table = $wpdb->prefix . 'sdp_products';
         
-        return $wpdb->get_results($wpdb->prepare(
-            "SELECT o.*, p.name as product_name, p.product_type 
-             FROM $orders_table o
-             LEFT JOIN {$wpdb->prefix}sdp_products p ON o.product_id = p.id
-             WHERE o.customer_email = %s
-             ORDER BY o.created_at DESC",
-            $email
-        ));
+        // product_typeカラムの存在確認
+        $column_exists = $wpdb->get_results("SHOW COLUMNS FROM $products_table LIKE 'product_type'");
+        
+        if (!empty($column_exists)) {
+            // product_typeカラムが存在する場合
+            return $wpdb->get_results($wpdb->prepare(
+                "SELECT o.*, p.name as product_name, p.product_type 
+                 FROM $orders_table o
+                 LEFT JOIN $products_table p ON o.product_id = p.id
+                 WHERE o.customer_email = %s
+                 ORDER BY o.created_at DESC",
+                $email
+            ));
+        } else {
+            // product_typeカラムが存在しない場合はデフォルト値を設定
+            return $wpdb->get_results($wpdb->prepare(
+                "SELECT o.*, p.name as product_name, 'digital' as product_type 
+                 FROM $orders_table o
+                 LEFT JOIN $products_table p ON o.product_id = p.id
+                 WHERE o.customer_email = %s
+                 ORDER BY o.created_at DESC",
+                $email
+            ));
+        }
     }
 }

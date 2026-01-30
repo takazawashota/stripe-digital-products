@@ -28,9 +28,10 @@ if (isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['produ
                 <tr>
                     <th style="width: 40px;">ID</th>
                     <th>商品名</th>
+                    <th style="width: 80px;">商品種類</th>
                     <th style="width: 80px;">価格</th>
                     <th style="width: 70px;">ファイル</th>
-                    <th style="width: 200px;">ショートコード</th>
+                    <th style="width: 120px;">ショートコード</th>
                     <th style="width: 100px;">Stripe連携</th>
                     <th style="width: 70px;">ステータス</th>
                     <th style="width: 120px;">作成日</th>
@@ -43,6 +44,16 @@ if (isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['produ
                         <td><?php echo esc_html($product->id); ?></td>
                         <td>
                             <strong><?php echo esc_html($product->name); ?></strong>
+                        </td>
+                        <td>
+                            <?php 
+                            $type_labels = array(
+                                'digital' => 'デジタル',
+                                'physical' => '物理',
+                                'service' => 'サービス',
+                            );
+                            echo esc_html($type_labels[$product->product_type ?? 'digital'] ?? 'デジタル');
+                            ?>
                         </td>
                         <td>¥<?php echo (floor($product->price) == $product->price) ? number_format((int)$product->price) : number_format($product->price, 2); ?></td>
                         <td>
