@@ -42,6 +42,19 @@ if (isset($_POST['sdp_update_database'])) {
         }
     }
     
+    // product_typeカラムが存在するかチェック
+    $product_type_exists = $wpdb->get_results("SHOW COLUMNS FROM $table_name LIKE 'product_type'");
+    
+    if (empty($product_type_exists)) {
+        $result = $wpdb->query("ALTER TABLE $table_name ADD COLUMN product_type varchar(50) DEFAULT 'digital' AFTER image_url");
+        
+        if ($result !== false) {
+            $updates_made[] = 'product_typeカラムを追加';
+        } else {
+            echo '<div class="notice notice-error"><p>✗ product_typeカラムの追加に失敗: ' . esc_html($wpdb->last_error) . '</p></div>';
+        }
+    }
+    
     if (!empty($updates_made)) {
         echo '<div class="notice notice-success"><p>✓ データベースを更新しました: ' . implode(', ', $updates_made) . '</p></div>';
     } else {

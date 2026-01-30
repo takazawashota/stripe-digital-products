@@ -200,10 +200,7 @@ if (isset($_POST['sdp_save_product'])) {
                             <img src="<?php echo esc_url($product->image_url); ?>" style="max-width: 300px; height: auto; border: 1px solid #ddd; padding: 5px;" />
                         <?php endif; ?>
                     </div>
-                    <button type="button" class="button" id="upload_image_button">画像を選択</button>
-                    <?php if (!empty($product->image_url)): ?>
-                        <button type="button" class="button" id="remove_image_button">画像を削除</button>
-                    <?php endif; ?>
+                    <button type="button" class="button" id="upload_image_button">画像を選択</button><?php if (!empty($product->image_url)): ?><button type="button" class="button" id="remove_image_button" style="margin-left: 4px;">画像を削除</button><?php endif; ?>
                     <p class="description">推奨サイズ: 800x800px</p>
                 </td>
             </tr>
@@ -261,7 +258,7 @@ if (isset($_POST['sdp_save_product'])) {
                     </div>
                     <p class="description">
                         <?php echo esc_html($current_currency['description']); ?><br>
-                        <strong style="color: #d63638;"><?php echo esc_html($current_currency['note']); ?></strong>
+                        <small style="color: #d63638;"><?php echo esc_html($current_currency['note']); ?></small>
                     </p>
                 </td>
             </tr>
@@ -356,7 +353,7 @@ if (isset($_POST['sdp_save_product'])) {
             <?php if ($product_id): ?>
                 <input type="submit" name="sdp_delete_product" class="button button-link-delete" value="削除" 
                        onclick="return confirm('この商品を削除してもよろしいですか？\n\n・商品データがデータベースから削除されます\n・アップロードされたファイルも削除されます\n・過去の購入者もダウンロードできなくなります\n\nこの操作は取り消せません。');" 
-                       style="color: #b32d2e; margin-left: 10px;" />
+                    />
             <?php endif; ?>
             <a href="<?php echo admin_url('admin.php?page=stripe-digital-products'); ?>" class="button">キャンセル</a>
         </p>

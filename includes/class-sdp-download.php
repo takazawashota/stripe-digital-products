@@ -251,7 +251,7 @@ class SDP_Download {
         $orders_table = $wpdb->prefix . 'sdp_orders';
         
         return $wpdb->get_results($wpdb->prepare(
-            "SELECT o.*, p.name as product_name 
+            "SELECT o.*, p.name as product_name, p.product_type 
              FROM $orders_table o
              LEFT JOIN {$wpdb->prefix}sdp_products p ON o.product_id = p.id
              ORDER BY o.created_at DESC
@@ -269,7 +269,7 @@ class SDP_Download {
         $orders_table = $wpdb->prefix . 'sdp_orders';
         
         return $wpdb->get_results($wpdb->prepare(
-            "SELECT o.*, p.name as product_name 
+            "SELECT o.*, p.name as product_name, p.product_type 
              FROM $orders_table o
              LEFT JOIN {$wpdb->prefix}sdp_products p ON o.product_id = p.id
              WHERE o.customer_email = %s

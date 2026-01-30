@@ -124,6 +124,7 @@ class Stripe_Digital_Products {
             name varchar(255) NOT NULL,
             description text,
             image_url varchar(500),
+            product_type varchar(50) DEFAULT 'digital',
             price decimal(10,2) NOT NULL,
             file_path varchar(500),
             stripe_product_id varchar(100),
@@ -141,6 +142,12 @@ class Stripe_Digital_Products {
         $column_exists = $wpdb->get_results("SHOW COLUMNS FROM $table_name LIKE 'image_url'");
         if (empty($column_exists)) {
             $wpdb->query("ALTER TABLE $table_name ADD COLUMN image_url varchar(500) AFTER description");
+        }
+        
+        // 既存テーブルにproduct_typeカラムが存在しない場合は追加
+        $product_type_exists = $wpdb->get_results("SHOW COLUMNS FROM $table_name LIKE 'product_type'");
+        if (empty($product_type_exists)) {
+            $wpdb->query("ALTER TABLE $table_name ADD COLUMN product_type varchar(50) DEFAULT 'digital' AFTER image_url");
         }
         
         // 注文テーブル

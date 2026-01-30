@@ -49,7 +49,7 @@
 
                 // 削除ボタンを表示（まだない場合）
                 if ($('#remove_image_button').length === 0) {
-                    $('#upload_image_button').after('<button type="button" class="button" id="remove_image_button">画像を削除</button>');
+                    $('#upload_image_button').after('<button type="button" class="button" id="remove_image_button" style="margin-left:4px;">画像を削除</button>');
                 }
             });
 
