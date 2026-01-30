@@ -1,0 +1,16 @@
+{
+    "name": "stripe-digital-products/wordpress-plugin",
+    "description": "WordPress plugin for selling digital products with Stripe",
+    "type": "wordpress-plugin",
+    "require": {
+        "php": ">=7.4",
+        "stripe/stripe-php": "^13.0"
+    },
+    "license": "GPL-2.0-or-later",
+    "authors": [
+        {
+            "name": "Your Name",
+            "email": "your-email@example.com"
+        }
+    ]
+}

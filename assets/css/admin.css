@@ -1,0 +1,45 @@
+/* 管理画面 CSS */
+
+/* ステータス表示 */
+.status-completed {
+    display: inline-block;
+    padding: 4px 8px;
+    background: #46b450;
+    color: #fff;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+.status-pending {
+    display: inline-block;
+    padding: 4px 8px;
+    background: #ffb900;
+    color: #fff;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+.status-failed {
+    display: inline-block;
+    padding: 4px 8px;
+    background: #dc3232;
+    color: #fff;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+/* フォーム */
+.form-table th .required {
+    color: #dc3232;
+}
+
+#current_file {
+    margin-top: 10px;
+    font-weight: bold;
+    color: #46b450;
+}
+
+/* テーブル */
+.wp-list-table td {
+    vertical-align: middle;
+}
