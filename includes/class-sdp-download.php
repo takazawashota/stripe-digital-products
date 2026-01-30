@@ -20,6 +20,89 @@ class SDP_Download {
     
     private function __construct() {
         add_action('init', array($this, 'handle_download'));
+        add_action('init', array($this, 'handle_admin_download'));
+        add_action('init', array($this, 'handle_admin_preview'));
+    }
+    
+    /**
+     * 管理者用ダウンロード処理
+     */
+    public function handle_admin_download() {
+        if (!isset($_GET['sdp_admin_download'])) {
+            return;
+        }
+        
+        // 管理者権限チェック
+        if (!current_user_can('manage_options')) {
+            wp_die('権限がありません', 'Forbidden', array('response' => 403));
+        }
+        
+        $token = sanitize_text_field($_GET['sdp_admin_download']);
+        
+        // トークンからファイルパスを取得
+        $file_path = get_transient('sdp_admin_download_' . $token);
+        
+        if (!$file_path) {
+            wp_die('無効またはトークンの有効期限が切れています。');
+        }
+        
+        // トークンを削除（一度きり）
+        delete_transient('sdp_admin_download_' . $token);
+        
+        $upload_dir = wp_upload_dir();
+        $full_path = $upload_dir['basedir'] . '/' . $file_path;
+        
+        // ファイルの存在確認
+        if (!file_exists($full_path)) {
+            wp_die('ファイルが見つかりません。');
+        }
+        
+        // セキュリティチェック
+        if (strpos($file_path, 'sdp-products/') !== 0) {
+            wp_die('不正なファイルパスです。');
+        }
+        
+        // ファイルをダウンロード
+        $this->serve_file($full_path, basename($file_path));
+    }
+    
+    /**
+     * 管理者用プレビュー処理（画像表示用）
+     */
+    public function handle_admin_preview() {
+        if (!isset($_GET['sdp_admin_preview'])) {
+            return;
+        }
+        
+        // 管理者権限チェック
+        if (!current_user_can('manage_options')) {
+            wp_die('権限がありません', 'Forbidden', array('response' => 403));
+        }
+        
+        $token = sanitize_text_field($_GET['sdp_admin_preview']);
+        
+        // トークンからファイルパスを取得
+        $file_path = get_transient('sdp_admin_preview_' . $token);
+        
+        if (!$file_path) {
+            wp_die('無効またはトークンの有効期限が切れています。');
+        }
+        
+        $upload_dir = wp_upload_dir();
+        $full_path = $upload_dir['basedir'] . '/' . $file_path;
+        
+        // ファイルの存在確認
+        if (!file_exists($full_path)) {
+            wp_die('ファイルが見つかりません。');
+        }
+        
+        // セキュリティチェック
+        if (strpos($file_path, 'sdp-products/') !== 0) {
+            wp_die('不正なファイルパスです。');
+        }
+        
+        // 画像を表示
+        $this->serve_preview_file($full_path);
     }
     
     /**
@@ -108,6 +191,31 @@ class SDP_Download {
         header('Cache-Control: private');
         header('Pragma: private');
         header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+        
+        // ファイルを出力
+        readfile($file_path);
+        exit;
+    }
+    
+    /**
+     * プレビュー用ファイル配信（画像・PDF）
+     */
+    private function serve_preview_file($file_path) {
+        // バッファをクリア
+        if (ob_get_level()) {
+            ob_end_clean();
+        }
+        
+        // MIMEタイプを取得
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mime_type = finfo_file($finfo, $file_path);
+        finfo_close($finfo);
+        
+        // ヘッダーを設定（インライン表示）
+        header('Content-Type: ' . $mime_type);
+        header('Content-Disposition: inline; filename="' . basename($file_path) . '"');
+        header('Content-Length: ' . filesize($file_path));
+        header('Cache-Control: private, max-age=300');
         
         // ファイルを出力
         readfile($file_path);

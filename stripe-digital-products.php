@@ -92,8 +92,17 @@ class Stripe_Digital_Products {
         
         if (!file_exists($sdp_upload_dir)) {
             wp_mkdir_p($sdp_upload_dir);
-            // .htaccessで直接アクセスを防ぐ
-            file_put_contents($sdp_upload_dir . '/.htaccess', 'deny from all');
+            
+            // .htaccessで画像以外の直接アクセスを防ぐ
+            $htaccess_content = "# Deny access to all files by default\n";
+            $htaccess_content .= "Order Deny,Allow\n";
+            $htaccess_content .= "Deny from all\n\n";
+            $htaccess_content .= "# Allow access to image files only\n";
+            $htaccess_content .= "<FilesMatch \"\.(jpg|jpeg|png|gif|webp)$\">\n";
+            $htaccess_content .= "    Allow from all\n";
+            $htaccess_content .= "</FilesMatch>\n";
+            
+            file_put_contents($sdp_upload_dir . '/.htaccess', $htaccess_content);
             file_put_contents($sdp_upload_dir . '/index.php', '<?php // Silence is golden');
         }
         
@@ -114,6 +123,7 @@ class Stripe_Digital_Products {
             id bigint(20) NOT NULL AUTO_INCREMENT,
             name varchar(255) NOT NULL,
             description text,
+            image_url varchar(500),
             price decimal(10,2) NOT NULL,
             file_path varchar(500),
             stripe_product_id varchar(100),
@@ -176,6 +186,7 @@ class Stripe_Digital_Products {
         wp_localize_script('sdp-admin', 'sdp_admin', array(
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('sdp_admin_nonce'),
+            'upload_url' => wp_upload_dir()['baseurl'] . '/',
         ));
     }
 }

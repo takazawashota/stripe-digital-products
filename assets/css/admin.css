@@ -1,5 +1,16 @@
 /* 管理画面 CSS */
 
+/* アニメーション */
+@keyframes rotation {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(359deg);
+    }
+}
+
 /* ステータス表示 */
 .status-completed {
     display: inline-block;

@@ -45,6 +45,11 @@ class SDP_Frontend {
         <div class="sdp-products-grid" data-columns="<?php echo esc_attr($atts['columns']); ?>">
             <?php foreach ($products as $product): ?>
                 <div class="sdp-product-card">
+                    <?php if (!empty($product->image_url)): ?>
+                        <div class="sdp-product-image">
+                            <img src="<?php echo esc_url($product->image_url); ?>" alt="<?php echo esc_attr($product->name); ?>" />
+                        </div>
+                    <?php endif; ?>
                     <div class="sdp-product-content">
                         <h3 class="sdp-product-title"><?php echo esc_html($product->name); ?></h3>
                         <div class="sdp-product-description">
@@ -89,6 +94,11 @@ class SDP_Frontend {
         ?>
         <div class="sdp-single-product">
             <h2 class="sdp-product-title"><?php echo esc_html($product->name); ?></h2>
+            <?php if (!empty($product->image_url)): ?>
+                <div class="sdp-product-image">
+                    <img src="<?php echo esc_url($product->image_url); ?>" alt="<?php echo esc_attr($product->name); ?>" />
+                </div>
+            <?php endif; ?>
             <div class="sdp-product-description">
                 <?php echo wp_kses_post($product->description); ?>
             </div>

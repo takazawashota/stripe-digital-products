@@ -67,6 +67,7 @@ class SDP_Products {
         $product_data = array(
             'name' => sanitize_text_field($data['name']),
             'description' => wp_kses_post($data['description']),
+            'image_url' => isset($data['image_url']) ? sanitize_text_field($data['image_url']) : '',
             'price' => floatval($data['price']),
             'file_path' => sanitize_text_field($data['file_path']),
             'status' => sanitize_text_field($data['status']),

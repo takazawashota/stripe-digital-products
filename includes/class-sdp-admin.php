@@ -21,6 +21,11 @@ class SDP_Admin {
     private function __construct() {
         add_action('admin_menu', array($this, 'add_admin_menu'));
         add_action('admin_init', array($this, 'register_settings'));
+        
+        // 管理者用ファイルダウンロードエンドポイント
+        add_action('wp_ajax_sdp_admin_download_file', array($this, 'admin_download_file'));
+        // 管理者用ファイルプレビューエンドポイント
+        add_action('wp_ajax_sdp_admin_preview_file', array($this, 'admin_preview_file'));
     }
     
     public function add_admin_menu() {
@@ -94,5 +99,93 @@ class SDP_Admin {
     
     public function render_settings_page() {
         include SDP_PLUGIN_DIR . 'templates/admin-settings.php';
+    }
+    
+    /**
+     * 管理者用ファイルダウンロード
+     */
+    public function admin_download_file() {
+        // 権限チェック
+        if (!current_user_can('manage_options')) {
+            wp_die('権限がありません', 'Forbidden', array('response' => 403));
+        }
+        
+        // nonceチェック
+        check_ajax_referer('sdp_admin_nonce', 'nonce');
+        
+        $file_path = isset($_POST['file_path']) ? sanitize_text_field($_POST['file_path']) : '';
+        
+        if (empty($file_path)) {
+            wp_send_json_error('ファイルパスが指定されていません');
+        }
+        
+        $upload_dir = wp_upload_dir();
+        $full_path = $upload_dir['basedir'] . '/' . $file_path;
+        
+        // ファイルの存在確認
+        if (!file_exists($full_path)) {
+            wp_send_json_error('ファイルが見つかりません: ' . basename($file_path));
+        }
+        
+        // セキュリティチェック: sdp-productsディレクトリ内のファイルのみ許可
+        if (strpos($file_path, 'sdp-products/') !== 0) {
+            wp_send_json_error('不正なファイルパスです');
+        }
+        
+        // 一時的なトークンを生成してリダイレクトURLを返す
+        $token = wp_generate_password(32, false);
+        set_transient('sdp_admin_download_' . $token, $file_path, 60); // 60秒有効
+        
+        $download_url = add_query_arg(array(
+            'sdp_admin_download' => $token,
+        ), admin_url('admin-ajax.php'));
+        
+        wp_send_json_success(array(
+            'download_url' => $download_url,
+        ));
+    }
+    
+    /**
+     * 管理者用ファイルプレビュー（画像用）
+     */
+    public function admin_preview_file() {
+        // 権限チェック
+        if (!current_user_can('manage_options')) {
+            wp_die('権限がありません', 'Forbidden', array('response' => 403));
+        }
+        
+        // nonceチェック
+        check_ajax_referer('sdp_admin_nonce', 'nonce');
+        
+        $file_path = isset($_POST['file_path']) ? sanitize_text_field($_POST['file_path']) : '';
+        
+        if (empty($file_path)) {
+            wp_send_json_error('ファイルパスが指定されていません');
+        }
+        
+        $upload_dir = wp_upload_dir();
+        $full_path = $upload_dir['basedir'] . '/' . $file_path;
+        
+        // ファイルの存在確認
+        if (!file_exists($full_path)) {
+            wp_send_json_error('ファイルが見つかりません');
+        }
+        
+        // セキュリティチェック
+        if (strpos($file_path, 'sdp-products/') !== 0) {
+            wp_send_json_error('不正なファイルパスです');
+        }
+        
+        // 一時的なトークンを生成
+        $token = wp_generate_password(32, false);
+        set_transient('sdp_admin_preview_' . $token, $file_path, 300); // 5分有効
+        
+        $preview_url = add_query_arg(array(
+            'sdp_admin_preview' => $token,
+        ), home_url('/'));
+        
+        wp_send_json_success(array(
+            'preview_url' => $preview_url,
+        ));
     }
 }
