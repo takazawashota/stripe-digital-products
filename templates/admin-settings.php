@@ -326,8 +326,8 @@ if (isset($_POST['sdp_save_email_settings'])) {
                     <input type="email" name="from_email" value="<?php echo esc_attr($email_settings['from_email'] ?? get_option('admin_email')); ?>" class="regular-text" />
                     <p class="description">
                         メールの送信元アドレス（From）<br>
-                        <strong style="color: #d63638;">⚠️ 重要: サーバーのドメイン（<?php echo parse_url(home_url(), PHP_URL_HOST); ?>）のメールアドレスを使用してください</strong><br>
-                        <small>Gmail等の外部ドメインを使用すると、スパム判定される可能性があります（SPF/DKIM認証失敗）</small>
+                        <small style="color: #d63638;">重要: サーバーのドメイン（<?php echo parse_url(home_url(), PHP_URL_HOST); ?>）のメールアドレスを使用してください</small><br>
+                        <small style="color: #646970;">Gmail等の外部ドメインを使用すると、スパム判定される可能性があります（SPF/DKIM認証失敗）</small>
                     </p>
                 </td>
             </tr>
@@ -353,7 +353,7 @@ if (isset($_POST['sdp_save_email_settings'])) {
                     <input type="email" name="return_path" value="<?php echo esc_attr($email_settings['return_path'] ?? get_option('admin_email')); ?>" class="regular-text" />
                     <p class="description">
                         配信エラー時のバウンスメール受信先<br>
-                        <strong style="color: #d63638;">⚠️ サーバーのドメイン（<?php echo parse_url(home_url(), PHP_URL_HOST); ?>）のメールアドレスを推奨</strong>
+                    <small style="color: #d63638;">サーバーのドメイン（<?php echo parse_url(home_url(), PHP_URL_HOST); ?>）のメールアドレスを推奨</small>
                     </p>
                 </td>
             </tr>
